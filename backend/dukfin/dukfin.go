@@ -1,7 +1,7 @@
 package dukfin
 
-import "github.com/dukfaar/dukfin/shared/dukfin"
+import "github.com/dukfaar/dukfin/shared"
 
 type DefaultDukFinServer struct {
-	dukfin.UnimplementedDukFinServer
+	shared.UnimplementedDukFinServer
 }
