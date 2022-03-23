@@ -11,5 +11,5 @@ import (
 const defaultPort = "8080"
 
 func main() {
-	DefaultDukFinServer
+	server := DefaultDukFinServer{}
 }
