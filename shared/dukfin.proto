@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/dukfaar/dukfin/shared/dukfin";
+option go_package = "github.com/dukfaar/dukfin/shared";
 
 import "google/protobuf/timestamp.proto";
 
