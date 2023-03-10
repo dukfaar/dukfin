@@ -107,8 +107,6 @@ func (r *TimeSeriesRenderer) Refresh() {
 }
 
 func (r *TimeSeriesRenderer) rerender(s fyne.Size) {
-	//if r.image == nil {
-	r.chart.XAxis.TickPosition = chart.TickPositionBetweenTicks
 	imageReadwriter := &bytes.Buffer{}
 	r.chart.Width = int(s.Width)
 	r.chart.Height = int(s.Height)
@@ -117,7 +115,6 @@ func (r *TimeSeriesRenderer) rerender(s fyne.Size) {
 		fmt.Println("Error: ", err)
 	}
 	r.image = canvas.NewImageFromReader(imageReadwriter, "chart.png")
-	//}
 	r.image.Resize(s)
 }
 
