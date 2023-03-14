@@ -54,8 +54,11 @@ func TestInterest_calculateNextValue(t *testing.T) {
 				baseTimeSeries: tt.fields.baseTimeSeries,
 			}
 			ts.calculateNextValue()
-			if got := ts.getLastValue(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("calculateNextValue; new last value = %v, want %v", got, tt.want)
+			if got := ts.getLastValue().Date; !reflect.DeepEqual(got, tt.want.Date) {
+				t.Errorf("calculateNextValue; new last date = %v, want %v", got, tt.want.Date)
+			}
+			if got := ts.getLastValue().Value; got.Cmp(tt.want.Value) != 0 {
+				t.Errorf("calculateNextValue; new last value = %v, want %v", got, tt.want.Value)
 			}
 		})
 	}
