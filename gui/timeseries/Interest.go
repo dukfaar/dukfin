@@ -1,7 +1,6 @@
 package timeseries
 
 import (
-	"fmt"
 	"math"
 	"time"
 
@@ -54,10 +53,8 @@ func (ts *Interest) calculateNextValue() {
 	if nextResolutionDate.Before(nextDate) || nextDate.Equal(lastValue.Date) {
 		nextDate = nextResolutionDate
 	}
-	fmt.Println(lastValue.Value.InexactFloat64())
 	lastValue.Value = baseValue.Add(lastValue.Value).Mul(ts.valueMultiplier(nextDate.Sub(lastValue.Date))).Sub(baseValue)
 	lastValue.Date = nextDate
-	fmt.Println(lastValue.Value.InexactFloat64())
 	ts.values = append(ts.values, lastValue)
 }
 
