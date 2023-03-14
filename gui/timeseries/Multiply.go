@@ -60,6 +60,24 @@ func (ts *Multiply) Rebuild() {
 	}
 }
 
+func (ts *Multiply) GetAllValuesBetween(from time.Time, to time.Time) []TimeSeriesValue {
+	if ts.IsDynamic() {
+		values1 := ts.Series1.GetAllValues()
+		values2 := ts.Series2.GetAllValues()
+		ts.values = make([]TimeSeriesValue, 0, len(values1)+len(values2))
+		for _, v := range values1 {
+			ts.values = append(ts.values, TimeSeriesValue{Value: ts.calculateValue(v.Date), Date: v.Date})
+		}
+		for _, v := range values2 {
+			ts.values = append(ts.values, TimeSeriesValue{Value: ts.calculateValue(v.Date), Date: v.Date})
+		}
+		sort.Slice(ts.values, func(i, j int) bool {
+			return ts.values[i].Date.Before(ts.values[j].Date)
+		})
+	}
+	return ts.baseTimeSeries.GetAllValuesBetween(from, to)
+}
+
 func (ts *Multiply) IsDynamic() bool {
 	return ts.Series1.IsDynamic() || ts.Series2.IsDynamic()
 }

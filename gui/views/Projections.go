@@ -55,7 +55,6 @@ func (v *Projections) CreateRenderer() fyne.WidgetRenderer {
 			Series: newTs,
 		}
 		newTs.Rebuild()
-		newTs.GetValue(projectionTarget)
 	}
 	accountsTable := widget.NewTable(
 		func() (int, int) { return len(accounts), 3 },

@@ -62,6 +62,21 @@ func (ts *Sum) Rebuild() {
 	}
 }
 
+func (ts *Sum) GetAllValuesBetween(from time.Time, to time.Time) []TimeSeriesValue {
+	if ts.IsDynamic() {
+		ts.values = make([]TimeSeriesValue, 0)
+		for _, s := range ts.Series {
+			for _, v := range s.GetAllValuesBetween(from, to) {
+				ts.values = append(ts.values, TimeSeriesValue{Value: ts.calculateValue(v.Date), Date: v.Date})
+			}
+		}
+		sort.Slice(ts.values, func(i, j int) bool {
+			return ts.values[i].Date.Before(ts.values[j].Date)
+		})
+	}
+	return ts.baseTimeSeries.GetAllValuesBetween(from, to)
+}
+
 func (ts *Sum) IsDynamic() bool {
 	for _, s := range ts.Series {
 		if s.IsDynamic() {
