@@ -51,11 +51,11 @@ func (ts *Interest) calculateNextValue() {
 	baseValue := ts.Series.GetValue(lastValue.Date)
 	nextDate := ts.Series.GetNext(lastValue.Date).Date
 	nextResolutionDate := lastValue.Date.Add(ts.Resolution)
-	if nextResolutionDate.Before(nextDate) || lastValue.Date == nextDate {
+	if nextResolutionDate.Before(nextDate) || nextDate.Equal(lastValue.Date) {
 		nextDate = nextResolutionDate
 	}
 	fmt.Println(lastValue.Value.InexactFloat64())
-	lastValue.Value = baseValue.Add(lastValue.Value).Mul(ts.valueMultiplier(nextDate.Sub(lastValue.Date))).Sub(lastValue.Value)
+	lastValue.Value = baseValue.Add(lastValue.Value).Mul(ts.valueMultiplier(nextDate.Sub(lastValue.Date))).Sub(baseValue)
 	lastValue.Date = nextDate
 	fmt.Println(lastValue.Value.InexactFloat64())
 	ts.values = append(ts.values, lastValue)
