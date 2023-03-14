@@ -44,8 +44,9 @@ func (v *Projections) CreateRenderer() fyne.WidgetRenderer {
 			Series: []timeseries.TimeSeries{accountTs, accountReccurringTs},
 		}
 		interestTs := &timeseries.Interest{
-			Series: accountStateTs,
-			APR:    decimal.NewFromFloat(7.0),
+			Series:     accountStateTs,
+			APR:        decimal.NewFromFloat(7.0),
+			Resolution: time.Hour * 24 * 30,
 		}
 		newTs := &timeseries.Sum{
 			Series: []timeseries.TimeSeries{accountStateTs, interestTs},
