@@ -36,12 +36,9 @@ func (v *Accounts) CreateRenderer() fyne.WidgetRenderer {
 		return nil
 	}
 	timeSeries := widgets.NewTimeSeries()
-	for i, account := range accounts {
+	for _, account := range accounts {
 		newTs := timeseries.NewAccount(account)
-		timeSeries.Series[account.Name] = renderer.Series{
-			Color:  colorMap[i%len(colorMap)],
-			Series: newTs,
-		}
+		timeSeries.Series[account.Name] = newTs
 		newTs.Rebuild()
 	}
 	accountToolbar := widget.NewToolbar(
@@ -59,7 +56,7 @@ func (v *Accounts) CreateRenderer() fyne.WidgetRenderer {
 			case 0:
 				co.(*widget.Label).SetText(account.Name)
 			case 1:
-				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[account.Name].Series.GetValue(time.Now()).InexactFloat64()))
+				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[account.Name].GetValue(time.Now()).InexactFloat64()))
 			case 2:
 				co.(*widget.Label).SetText(account.Edges.Currency.Symbol)
 			case 3:

@@ -7,19 +7,20 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 	"github.com/dukfaar/dukfin/gui/renderer"
+	"github.com/dukfaar/dukfin/gui/timeseries"
 	"github.com/shopspring/decimal"
 )
 
 type TimeSeries struct {
 	widget.BaseWidget
-	Series map[string]renderer.Series
+	Series map[string]timeseries.TimeSeries
 
 	endDate *time.Time
 }
 
 func NewTimeSeries() *TimeSeries {
 	result := &TimeSeries{
-		Series: make(map[string]renderer.Series),
+		Series: make(map[string]timeseries.TimeSeries),
 	}
 	result.ExtendBaseWidget(result)
 	return result
@@ -38,8 +39,8 @@ func (s *TimeSeries) CreateRenderer() fyne.WidgetRenderer {
 	minValue := decimal.NewFromInt(math.MaxInt)
 	maxValue := decimal.NewFromInt(math.MinInt)
 	for _, series := range s.Series {
-		minV, maxV := series.Series.ValueRange(maxDate)
-		minD := series.Series.MinDate()
+		minV, maxV := series.ValueRange(maxDate)
+		minD := series.MinDate()
 		if minD.Before(minDate) {
 			minDate = minD
 		}

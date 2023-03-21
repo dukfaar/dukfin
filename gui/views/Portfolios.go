@@ -40,7 +40,7 @@ func (v *Portfolios) CreateRenderer() fyne.WidgetRenderer {
 		return nil
 	}
 	timeSeries := widgets.NewTimeSeries()
-	for i, portfolio := range portfolios {
+	for _, portfolio := range portfolios {
 		ts := &timeseries.Sum{Series: []timeseries.TimeSeries{}}
 		for _, security := range securities {
 			newTs := &timeseries.Multiply{
@@ -50,10 +50,7 @@ func (v *Portfolios) CreateRenderer() fyne.WidgetRenderer {
 			ts.Series = append(ts.Series, newTs)
 		}
 		ts.Rebuild()
-		timeSeries.Series[portfolio.Name] = renderer.Series{
-			Color:  colorMap[i%len(colorMap)],
-			Series: ts,
-		}
+		timeSeries.Series[portfolio.Name] = ts
 	}
 	portfolioToolbar := widget.NewToolbar(
 		widget.NewToolbarAction(theme.ContentAddIcon(), func() { dialogs.NewPortfolio(v.client).Show() }),
@@ -67,7 +64,7 @@ func (v *Portfolios) CreateRenderer() fyne.WidgetRenderer {
 			case 0:
 				co.(*widget.Label).SetText(portfolio.Name)
 			case 1:
-				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[portfolio.Name].Series.GetValue(time.Now()).InexactFloat64()))
+				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[portfolio.Name].GetValue(time.Now()).InexactFloat64()))
 			case 2:
 				co.(*widget.Label).SetText(portfolio.Edges.Currency.Symbol)
 			case 3:

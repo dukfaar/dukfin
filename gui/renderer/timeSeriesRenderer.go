@@ -3,8 +3,6 @@ package renderer
 import (
 	"bytes"
 	"fmt"
-	"image"
-	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -14,59 +12,67 @@ import (
 	"github.com/wcharczuk/go-chart"
 )
 
-type Series struct {
+type series struct {
 	Series timeseries.TimeSeries
-	Color  color.RGBA
+	name   string
+	index  int
 }
 
 type TimeSeriesRenderer struct {
 	fyne.WidgetRenderer
 
-	series map[string]Series
+	series map[string]*series
 
 	image          *canvas.Image
-	drawImage      *image.RGBA
 	redrawRequired bool
 
 	chart chart.Chart
 
-	decHeight decimal.Decimal
-
 	fromDate         time.Time
 	toDate           time.Time
 	dateRangeSeconds float64
-	pixelDuration    time.Duration
 
 	fromValue  decimal.Decimal
 	toValue    decimal.Decimal
 	valueRange decimal.Decimal
 }
 
-func (r *TimeSeriesRenderer) SetSeries(name string, s Series) {
+func (r *TimeSeriesRenderer) buildTS(s *series) chart.TimeSeries {
+	ts := chart.TimeSeries{
+		Name:    s.name,
+		XValues: []time.Time{},
+		YValues: []float64{},
+		YAxis:   chart.YAxisPrimary,
+		Style: chart.Style{
+			Show:        true,
+			StrokeColor: chart.GetDefaultColor(s.index).WithAlpha(128),
+			FillColor:   chart.GetDefaultColor(s.index).WithAlpha(0),
+		},
+	}
+	for _, value := range s.Series.GetAllValuesBetween(r.fromDate, r.toDate) {
+		ts.XValues = append(ts.XValues, value.Date)
+		ts.YValues = append(ts.YValues, value.Value.InexactFloat64())
+	}
+	return ts
+}
+
+func (r *TimeSeriesRenderer) SetSeries(name string, s timeseries.TimeSeries) {
 	if r.series == nil {
-		r.series = make(map[string]Series)
+		r.series = make(map[string]*series)
+		r.chart.Series = []chart.Series{}
 	}
-	r.series[name] = s
-	r.chart.Series = []chart.Series{}
-	for name, series := range r.series {
-		ts := chart.TimeSeries{
-			Name:    name,
-			XValues: []time.Time{},
-			YValues: []float64{},
-			YAxis:   chart.YAxisPrimary,
-			Style: chart.Style{
-				Show:        true,
-				StrokeColor: chart.GetDefaultColor(0).WithAlpha(128),
-				FillColor:   chart.GetDefaultColor(0).WithAlpha(0),
-			},
+	ts, ok := r.series[name]
+	if !ok {
+		ts = &series{
+			Series: s,
+			name:   name,
+			index:  len(r.series),
 		}
-		for _, value := range series.Series.GetAllValuesBetween(r.fromDate, r.toDate) {
-			ts.XValues = append(ts.XValues, value.Date)
-			ts.YValues = append(ts.YValues, value.Value.InexactFloat64())
-		}
-		r.chart.Series = append(r.chart.Series, ts)
+		r.chart.Series = append(r.chart.Series, r.buildTS(ts))
+		r.series[name] = ts
+		return
 	}
-	r.redrawRequired = true
+	r.chart.Series[ts.index] = r.buildTS(ts)
 }
 
 func (r *TimeSeriesRenderer) SetDateRange(from time.Time, to time.Time) {
@@ -108,6 +114,8 @@ func (r *TimeSeriesRenderer) Refresh() {
 
 func (r *TimeSeriesRenderer) rerender(s fyne.Size) {
 	imageReadwriter := &bytes.Buffer{}
+	r.chart.XAxis.Style.Show = true
+	r.chart.YAxis.Style.Show = true
 	r.chart.Width = int(s.Width)
 	r.chart.Height = int(s.Height)
 	err := r.chart.Render(chart.PNG, imageReadwriter)

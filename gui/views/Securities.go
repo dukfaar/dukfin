@@ -34,12 +34,9 @@ func (v *Securities) CreateRenderer() fyne.WidgetRenderer {
 		return nil
 	}
 	timeSeries := widgets.NewTimeSeries()
-	for i, security := range Securities {
+	for _, security := range Securities {
 		newTs := timeseries.NewSecurityPrice(security)
-		timeSeries.Series[security.Name] = renderer.Series{
-			Color:  colorMap[i%len(colorMap)],
-			Series: newTs,
-		}
+		timeSeries.Series[security.Name] = newTs
 		newTs.Rebuild()
 	}
 	SecuritiesTable := widget.NewTable(
@@ -51,7 +48,7 @@ func (v *Securities) CreateRenderer() fyne.WidgetRenderer {
 			case 0:
 				co.(*widget.Label).SetText(security.Name)
 			case 1:
-				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[security.Name].Series.GetValue(time.Now()).InexactFloat64()))
+				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[security.Name].GetValue(time.Now()).InexactFloat64()))
 			case 2:
 				co.(*widget.Label).SetText(security.Edges.Currency.Symbol)
 			}

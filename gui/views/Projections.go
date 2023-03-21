@@ -37,7 +37,7 @@ func (v *Projections) CreateRenderer() fyne.WidgetRenderer {
 	projectionTarget := time.Now().AddDate(30, 0, 0)
 	timeSeries := widgets.NewTimeSeries()
 	timeSeries.SetEndDate(projectionTarget)
-	for i, account := range accounts {
+	for _, account := range accounts {
 		accountTs := timeseries.NewAccount(account)
 		accountReccurringTs := timeseries.NewRecurringAccountTransactions(account.Edges.IncomingRecurringTransactions, account.Edges.OutgoingRecurringTransactions)
 		accountStateTs := &timeseries.Sum{
@@ -50,10 +50,7 @@ func (v *Projections) CreateRenderer() fyne.WidgetRenderer {
 		newTs := &timeseries.Sum{
 			Series: []timeseries.TimeSeries{accountStateTs, interestTs},
 		}
-		timeSeries.Series[account.Name] = renderer.Series{
-			Color:  colorMap[i%len(colorMap)],
-			Series: newTs,
-		}
+		timeSeries.Series[account.Name] = newTs
 		newTs.Rebuild()
 		newTs.GetValue(projectionTarget)
 	}
@@ -66,7 +63,7 @@ func (v *Projections) CreateRenderer() fyne.WidgetRenderer {
 			case 0:
 				co.(*widget.Label).SetText(account.Name)
 			case 1:
-				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[account.Name].Series.GetValue(projectionTarget).InexactFloat64()))
+				co.(*widget.Label).SetText(fmt.Sprintf("%f", timeSeries.Series[account.Name].GetValue(projectionTarget).InexactFloat64()))
 			case 2:
 				co.(*widget.Label).SetText(account.Edges.Currency.Symbol)
 			case 3:
