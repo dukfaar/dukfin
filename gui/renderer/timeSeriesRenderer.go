@@ -114,8 +114,19 @@ func (r *TimeSeriesRenderer) Refresh() {
 
 func (r *TimeSeriesRenderer) rerender(s fyne.Size) {
 	imageReadwriter := &bytes.Buffer{}
-	r.chart.XAxis.Style.Show = true
-	r.chart.YAxis.Style.Show = true
+	r.chart.XAxis = chart.XAxis{
+		Name:           "X",
+		ValueFormatter: chart.TimeDateValueFormatter,
+		Style: chart.Style{
+			Show: true,
+		},
+	}
+	r.chart.YAxis = chart.YAxis{
+		Name: "Y",
+		Style: chart.Style{
+			Show: true,
+		},
+	}
 	r.chart.Width = int(s.Width)
 	r.chart.Height = int(s.Height)
 	err := r.chart.Render(chart.PNG, imageReadwriter)

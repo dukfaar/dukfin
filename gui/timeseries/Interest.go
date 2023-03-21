@@ -8,9 +8,10 @@ import (
 )
 
 type Interest struct {
-	Series TimeSeries
-	APR    decimal.Decimal
-	From   time.Time
+	Series     TimeSeries
+	APR        decimal.Decimal
+	From       time.Time
+	Resolution time.Duration
 
 	baseTimeSeries
 }
@@ -40,30 +41,44 @@ func (ts *Interest) ValueRange(until time.Time) (decimal.Decimal, decimal.Decima
 	return minValue, maxValue
 }
 
+func (ts *Interest) getLastValue() TimeSeriesValue {
+	return ts.values[len(ts.values)-1]
+}
+
+func (ts *Interest) calculateNextValue() {
+	lastValue := ts.getLastValue()
+	baseValue := ts.Series.GetValue(lastValue.Date)
+	nextDate := ts.Series.GetNext(lastValue.Date).Date
+	nextResolutionDate := lastValue.Date.Add(ts.Resolution)
+	if nextResolutionDate.Before(nextDate) || nextDate.Equal(lastValue.Date) {
+		nextDate = nextResolutionDate
+	}
+	lastValue.Value = baseValue.Add(lastValue.Value).Mul(ts.valueMultiplier(nextDate.Sub(lastValue.Date))).Sub(baseValue)
+	lastValue.Date = nextDate
+	ts.values = append(ts.values, lastValue)
+}
+
 func (ts *Interest) GetValue(at time.Time) decimal.Decimal {
 	lastValue := ts.values[len(ts.values)-1]
-	if lastValue.Date.Equal(at) {
+	if ts.getLastValue().Date.Equal(at) {
 		return lastValue.Value
 	}
-	if lastValue.Date.After(at) {
-		valueIndex := ts.baseTimeSeries.GetValueIndex(at)
-		if valueIndex == -1 {
-			return decimal.Decimal{}
-		}
-		v := ts.values[valueIndex]
-		return v.Value.Mul(ts.valueMultiplier(at.Sub(v.Date)))
+	for ts.getLastValue().Date.Before(at) {
+		ts.calculateNextValue()
 	}
-	for lastValue.Date.Before(at) {
-		baseValue := ts.Series.GetValue(lastValue.Date)
-		nextDate := ts.Series.GetNext(lastValue.Date).Date
-		if nextDate.Equal(lastValue.Date) {
-			nextDate = at
-		}
-		lastValue.Value = baseValue.Mul(ts.valueMultiplier(nextDate.Sub(lastValue.Date))).Sub(baseValue)
-		lastValue.Date = nextDate
-		ts.values = append(ts.values, lastValue)
+	valueIndex := ts.baseTimeSeries.GetValueIndex(at)
+	if valueIndex == -1 {
+		return decimal.Decimal{}
 	}
-	return lastValue.Value
+	v := ts.values[valueIndex]
+	return v.Value.Mul(ts.valueMultiplier(at.Sub(v.Date)))
+}
+
+func (ts *Interest) GetAllValuesBetween(from time.Time, to time.Time) []TimeSeriesValue {
+	for ts.getLastValue().Date.Before(to) {
+		ts.calculateNextValue()
+	}
+	return ts.baseTimeSeries.GetAllValuesBetween(from, to)
 }
 
 func (ts *Interest) Rebuild() {

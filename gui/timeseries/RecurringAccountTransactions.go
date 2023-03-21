@@ -60,6 +60,17 @@ func (ts *RecurringAccountTransactions) calculateNextValue() {
 	ts.values = append(ts.values, nextValue)
 }
 
+func (ts *RecurringAccountTransactions) getLastValue() TimeSeriesValue {
+	return ts.values[len(ts.values)-1]
+}
+
+func (ts *RecurringAccountTransactions) GetAllValuesBetween(from time.Time, to time.Time) []TimeSeriesValue {
+	for ts.getLastValue().Date.Before(to) {
+		ts.calculateNextValue()
+	}
+	return ts.baseTimeSeries.GetAllValuesBetween(from, to)
+}
+
 func (ts *RecurringAccountTransactions) GetValue(at time.Time) decimal.Decimal {
 	lastValue := ts.values[len(ts.values)-1]
 	if lastValue.Date.Equal(at) {
