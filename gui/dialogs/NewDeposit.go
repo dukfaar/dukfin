@@ -10,38 +10,50 @@ import (
 	"github.com/dukfaar/dukfin/gui/widgets"
 )
 
+type deposit struct {
+	dialog.Dialog
+	client        *ent.Client
+	amountString  *widgets.DecimalEntry
+	accountSelect *widgets.ItemSelect[*ent.Account]
+	dateEntry     *widgets.TimeEntry
+}
+
+func (d *deposit) callback(confirmed bool) {
+	if !confirmed {
+		return
+	}
+	amount, err := d.amountString.GetDecimal()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	date, err := d.dateEntry.GetTime()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	_, err = d.client.Transaction.Create().
+		SetCurrencyValue(amount).
+		SetDate(date).
+		SetToAccount(d.accountSelect.Get()).
+		Save(context.Background())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 func NewDeposit(client *ent.Client) dialog.Dialog {
-	amountString := widgets.NewDecimalEntry()
-	accountSelect := widgets.NewItemSelect(client.Account.Query().AllX(context.Background()), func(s *ent.Account) string { return s.Name })
-	dateEntry := widgets.NewTimeEntry()
+	result := deposit{
+		client:        client,
+		amountString:  widgets.NewDecimalEntry(),
+		accountSelect: widgets.NewItemSelect(client.Account.Query().AllX(context.Background()), func(s *ent.Account) string { return s.Name }),
+		dateEntry:     widgets.NewTimeEntry(),
+	}
 	items := []*widget.FormItem{
-		widget.NewFormItem("Account", accountSelect),
-		widget.NewFormItem("Amount", amountString),
-		widget.NewFormItem("Date", dateEntry),
+		widget.NewFormItem("Account", result.accountSelect),
+		widget.NewFormItem("Amount", result.amountString),
+		widget.NewFormItem("Date", result.dateEntry),
 	}
-	callback := func(confirmed bool) {
-		if !confirmed {
-			return
-		}
-		amount, err := amountString.GetDecimal()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		date, err := dateEntry.GetTime()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		_, err = client.Transaction.Create().
-			SetCurrencyValue(amount).
-			SetDate(date).
-			SetToAccount(accountSelect.Get()).
-			Save(context.Background())
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-	}
-	return dialog.NewForm("Deposit", "Create", "Cancel", items, callback, window)
+	return dialog.NewForm("Deposit", "Create", "Cancel", items, result.callback, window)
 }
