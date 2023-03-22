@@ -42,7 +42,7 @@ func (v *Accounts) CreateRenderer() fyne.WidgetRenderer {
 		newTs.Rebuild()
 	}
 	accountToolbar := widget.NewToolbar(
-		widget.NewToolbarAction(theme.ContentAddIcon(), func() { dialogs.Account(v.client, nil).Show() }),
+		widget.NewToolbarAction(theme.ContentAddIcon(), func() { dialogs.NewAccount(v.client, nil).Show() }),
 		widget.NewToolbarAction(theme.MoveDownIcon(), func() { dialogs.NewDeposit(v.client).Show() }),
 		widget.NewToolbarAction(theme.MoveUpIcon(), func() { dialogs.NewWithdrawal(v.client).Show() }),
 		widget.NewToolbarAction(theme.NavigateNextIcon(), func() { dialogs.NewTransfer(v.client).Show() }),
@@ -64,7 +64,7 @@ func (v *Accounts) CreateRenderer() fyne.WidgetRenderer {
 			}
 		})
 	accountsTable.OnSelected = func(tci widget.TableCellID) {
-		dialogs.Account(v.client, accounts[tci.Row]).Show()
+		dialogs.NewAccount(v.client, accounts[tci.Row]).Show()
 	}
 	renderer := &renderer.ContainerRenderer{
 		Container: container.NewMax(container.NewVSplit(

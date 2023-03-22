@@ -9,7 +9,7 @@ import (
 	"github.com/dukfaar/dukfin/gui/widgets"
 )
 
-func Account(client *ent.Client, account *ent.Account) dialog.Dialog {
+func NewAccount(client *ent.Client, account *ent.Account) dialog.Dialog {
 	accountName := widget.NewEntry()
 	expectedAprString := widgets.NewDecimalEntry()
 	currencySelect := widgets.NewItemSelect(client.Currency.Query().AllX(context.Background()), func(s *ent.Currency) string { return s.Name })
