@@ -31,6 +31,10 @@ func (e *DecimalEntry) GetDecimal() (decimal.Decimal, error) {
 	return decimal.NewFromString(s)
 }
 
+func (e *DecimalEntry) SetDecimal(d decimal.Decimal) {
+	e.SetText(d.String())
+}
+
 func (e *DecimalEntry) TypedRune(r rune) {
 	if (r >= '0' && r <= '9') || r == '.' || r == ',' {
 		e.Entry.TypedRune(r)

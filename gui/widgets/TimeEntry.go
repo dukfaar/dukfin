@@ -26,6 +26,10 @@ func (e *TimeEntry) GetTime() (time.Time, error) {
 	return time.Parse(time.RFC3339, e.Text)
 }
 
+func (e *TimeEntry) SetTime(t time.Time) {
+	e.SetText(t.Format(time.RFC3339))
+}
+
 func (e *TimeEntry) TypedShortcut(shortcut fyne.Shortcut) {
 	paste, ok := shortcut.(*fyne.ShortcutPaste)
 	if !ok {
